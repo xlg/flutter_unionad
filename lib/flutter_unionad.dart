@@ -2,6 +2,7 @@ export 'package:flutter_unionad/flutter_unionad_code.dart';
 export 'package:flutter_unionad/flutter_unionad_stream.dart';
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

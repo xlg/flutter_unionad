@@ -20,6 +20,7 @@ public class SplashAdView : NSObject,FlutterPlatformView{
     var hideSkip :Bool = false
     var timeout : Double? = 3.0
     var splashAd:BUSplashAd?
+    private var skipBtn:UIButton?
     
     
     init(_ frame : CGRect,binaryMessenger: FlutterBinaryMessenger , id : Int64, params :Any?) {
@@ -33,6 +34,16 @@ public class SplashAdView : NSObject,FlutterPlatformView{
         self.timeout = (dict.value(forKey: "timeout") as! Double) / 1000
         super.init()
         self.channel = FlutterMethodChannel.init(name: FlutterUnionadConfig.view.splashAdView + "_" + String(id), binaryMessenger: binaryMessenger)
+        self.channel?.setMethodCallHandler{ call, result in
+            if call.method == "dispose_splash" {
+                print("收到了清空消息,并模拟点击")
+                self.disposeView()
+//                self.skipBtn?.sendActions(for: .touchUpInside)
+                result(nil)
+            } else {
+                result(FlutterMethodNotImplemented)
+            }
+        }
         self.loadSplash()
     }
     
@@ -58,9 +69,15 @@ public class SplashAdView : NSObject,FlutterPlatformView{
     }
     
     private func disposeView() {
-        self.container.removeFromSuperview()
-        self.splashAd?.mediation?.destoryAd()
-        self.splashAd = nil;
+        if (self.splashAd == nil) {
+            print("广告View已清空")
+        } else {
+            self.container.removeFromSuperview()
+            //这句不加手动还移除不了
+            self.splashAd?.removeSplashView()
+            self.splashAd?.mediation?.destoryAd()
+            self.splashAd = nil;
+        }
     }
     
     //自定义跳过按钮
@@ -75,6 +92,7 @@ public class SplashAdView : NSObject,FlutterPlatformView{
         skipBtn.backgroundColor = UIColor.gray
         skipBtn.alpha = 0.8
         skipBtn.layer.cornerRadius = 10
+        self.skipBtn = skipBtn
         self.splashAd?.splashView?.addSubview(skipBtn)
     }
     

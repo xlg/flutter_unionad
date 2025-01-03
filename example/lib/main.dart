@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
 import 'package:flutter_unionad/flutter_unionad.dart';
+import 'package:flutter_unionad_example/TestCode.dart';
 import 'package:flutter_unionad_example/banner_page.dart';
 import 'package:flutter_unionad_example/drawfeed_page.dart';
 import 'package:flutter_unionad_example/splash_page.dart';
@@ -46,7 +47,30 @@ class _IndexPageState extends State<IndexPage> {
   @override
   void initState() {
     super.initState();
-    _initRegister();
+    FlutterUnionad.requestPermissionIfNecessary(
+      callBack: FlutterUnionadPermissionCallBack(
+        notDetermined: () {
+          print("权限未确定");
+          _finalInit(limitIos: false);
+        },
+        restricted: () {
+          print("权限限制");
+          _finalInit(limitIos: true);
+        },
+        denied: () {
+          print("权限拒绝");
+          _finalInit(limitIos: true);
+        },
+        authorized: () {
+          print("权限同意");
+          _finalInit(limitIos: false);
+        },
+      ),
+    );
+  }
+
+  void _finalInit({limitIos = false}) async {
+    _initRegister(limitIos: limitIos);
     _adViewStream = FlutterUnionadStream.initAdStream(
       flutterUnionadFullVideoCallBack: FlutterUnionadFullVideoCallBack(
         onShow: () {
@@ -88,7 +112,7 @@ class _IndexPageState extends State<IndexPage> {
       ),
       // 新模板渲染插屏广告回调
       flutterUnionadNewInteractionCallBack:
-          FlutterUnionadNewInteractionCallBack(
+      FlutterUnionadNewInteractionCallBack(
         onShow: () {
           print("新模板渲染插屏广告显示");
         },
@@ -119,8 +143,8 @@ class _IndexPageState extends State<IndexPage> {
       //激励广告
       flutterUnionadRewardAdCallBack: FlutterUnionadRewardAdCallBack(
           onShow: () {
-        print("激励广告显示");
-      }, onClick: () {
+            print("激励广告显示");
+          }, onClick: () {
         print("激励广告点击");
       }, onFail: (error) {
         print("激励广告失败 $error");
@@ -139,23 +163,25 @@ class _IndexPageState extends State<IndexPage> {
         print(
             "激励广告奖励  验证结果=$rewardVerify 奖励=$rewardAmount  奖励名称$rewardName 错误码=$errorCode 错误$error");
       }, onRewardArrived: (rewardVerify, rewardType, rewardAmount, rewardName,
-              errorCode, error, propose) {
+          errorCode, error, propose) {
         print(
             "阶段激励广告奖励  验证结果=$rewardVerify 奖励类型<FlutterUnionadRewardType>=$rewardType 奖励=$rewardAmount"
-            "奖励名称$rewardName 错误码=$errorCode 错误$error 建议奖励$propose");
+                "奖励名称$rewardName 错误码=$errorCode 错误$error 建议奖励$propose");
       }),
     );
+
+
   }
 
   //注册
-  void _initRegister() async {
+  void _initRegister({limitIos = false}) async {
     _init = await FlutterUnionad.register(
-        //穿山甲广告 Android appid 必填
-        androidAppId: "5098580",
+      //穿山甲广告 Android appid 必填
+        androidAppId: TestCode.androidAppId,
         //穿山甲广告 ios appid 必填
-        iosAppId: "5098580",
+        iosAppId: TestCode.iosAppId,
         //appname 必填
-        appName: "unionad_test",
+        appName: "xxxx",
         //使用聚合功能一定要打开此开关，否则不会请求聚合广告，默认这个值为false
         //true使用GroMore下的广告位
         //false使用广告变现下的广告位
@@ -213,11 +239,11 @@ class _IndexPageState extends State<IndexPage> {
         ),
         iosPrivacy: IOSPrivacy(
           //允许个性化广告
-          limitPersonalAds: false,
+          limitPersonalAds: limitIos,
           //允许程序化广告
-          limitProgrammaticAds: false,
+          limitProgrammaticAds: limitIos,
           //允许CAID
-          forbiddenCAID: false,
+          forbiddenCAID: limitIos,
         ));
     print("sdk初始化 $_init");
     _version = await FlutterUnionad.getSDKVersion();

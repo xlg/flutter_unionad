@@ -48,15 +48,15 @@ class FlutterUnionadSplashAdView extends StatefulWidget {
       : super(key: key);
 
   @override
-  _SplashAdViewState createState() {
+  SplashAdViewState createState() {
     supportDeepLink = supportDeepLink ?? true;
     timeout = timeout ?? 3000;
     hideSkip = hideSkip ?? false;
-    return _SplashAdViewState();
+    return SplashAdViewState();
   }
 }
 
-class _SplashAdViewState extends State<FlutterUnionadSplashAdView> {
+class SplashAdViewState extends State<FlutterUnionadSplashAdView> {
   String _viewType = "com.gstory.flutter_unionad/SplashAdView";
 
   MethodChannel? _channel;
@@ -68,6 +68,13 @@ class _SplashAdViewState extends State<FlutterUnionadSplashAdView> {
   void initState() {
     super.initState();
     _isShowAd = true;
+  }
+
+  @override
+  void dispose() {
+    print("闪屏View关闭");
+    iosSendDispose();
+    super.dispose();
   }
 
   @override
@@ -120,6 +127,13 @@ class _SplashAdViewState extends State<FlutterUnionadSplashAdView> {
   void _registerChannel(int id) {
     _channel = MethodChannel("${_viewType}_$id");
     _channel?.setMethodCallHandler(_platformCallHandler);
+  }
+
+  //手动清除广告splash广告
+  void iosSendDispose() {
+    if (Platform.isIOS) {
+      _channel?.invokeMethod("dispose_splash");
+    }
   }
 
   //监听原生view传值
